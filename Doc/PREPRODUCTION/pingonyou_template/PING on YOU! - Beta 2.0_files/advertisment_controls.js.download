@@ -1,0 +1,5 @@
+function Close_Level1_AD() {
+  //document.getElementById("tb911adsheadline").style.display = 'none';
+  //alert("sliding");
+  $(".level1-add-banner-horizontal").slideUp("fast");
+}
