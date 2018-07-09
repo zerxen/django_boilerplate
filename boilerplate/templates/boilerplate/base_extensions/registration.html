@@ -1,0 +1,21 @@
+{% extends 'boilerplate/base_template.html' %}
+
+{% block content %}
+        {% if registration_passed %}
+            You have submitted you regstration, to activate you account follow a link that we sent to your email account. Then you can [<a style='color: red' href="{% url 'login' %}">LOG-IN HERE</a>]
+        {% else %} 
+             <form action="{% url 'registration' %}" method="post"> {% csrf_token %}
+                Email:    <input type="text" name="email" value="{{ email }}" /><br>
+                Choose New Password: <input type="password" name="password1" value="" /><br>
+                Confirm Password:    <input type="password" name="password2" value="" /><br>
+                PASSWORD POLICY:
+                <ul>
+                <li>At least MIN_LENGTH of 8, set in RegistrationView class
+                <li>At least on one letter and one non-letter
+                </ul>
+
+                <input type="submit" value="Register" />
+            </form>
+        {% endif %}
+
+{% endblock %}

@@ -1,0 +1,44 @@
+{% load staticfiles %}
+<html>
+    <head>
+        <title>Boilerplate</title>
+    </head>
+    <body>
+        <h1>Base template:</h1>
+        
+        
+        <!-- 
+        ERROR DISPLAY BETWEEN HEADER AND MENU 
+        -->
+        {% if error_message %}<p><font color="red">ERROR: {{ error_message }}</font></p>{% endif %} 
+        {% if messages %}
+        <ul class="messages">
+            {% for message in messages %}
+            <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>
+                {% if message.level == DEFAULT_MESSAGE_LEVELS.ERROR %}  
+                <font color="red">ERROR:</font>
+                {% else %}
+                <font color="blue">INFO:</font>
+                {% endif %}
+                {{ message }}
+            </li>
+            {% endfor %}
+        </ul>
+        {% endif %}  
+        
+        <!-- 
+        CONTENT 
+        -->              
+        {% block content %}
+        {% endblock %}  
+    
+        <!-- 
+        LOG-OUT AND LOGIN 
+        -->     
+        {% if user.username %}    
+            <strong>Logged in as:  {{ user.username }} [<a style='color: red' href="{% url 'logout' %}">LOG-OUT</a>]</strong>                      
+        {% else %}
+            Not logged-in [<a style='color: red' href="{% url 'login' %}">LOG-IN</a>] or [<a style='color: red' href="{% url 'registration' %}">REGISTER</a>]
+        {% endif %}
+    </body>
+</html>

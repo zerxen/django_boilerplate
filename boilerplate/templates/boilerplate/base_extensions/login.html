@@ -1,0 +1,16 @@
+{% extends 'boilerplate/base_template.html' %}
+
+{% block content %}
+
+        {% if user.username %} 
+            Logged in as: {{user.username}} <br>
+        {% else %}
+             <form action="{% url 'login' %}" method="post"> {% csrf_token %}
+                Username: <input type="text" name="username" value="{{ username }}" />
+                Password: <input type="password" name="password" value="" />
+                <input type="hidden" name="next" value="{{ request.GET.next }}" />
+                <input type="submit" value="Sign in" />
+            </form>
+        {% endif %}
+
+{% endblock %}
