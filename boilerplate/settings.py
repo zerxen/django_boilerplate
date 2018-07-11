@@ -12,15 +12,16 @@ https://docs.djangoproject.com/en/2.0/ref/settings/
 
 import os
 
+# This is to hide problematic parts of the configuration from github backups,
+# E.G. EMAIL BACKEND PASSWORD AND DATABASE PASSWORD
+from boilerplate.settings_secret import *
+
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/2.0/howto/deployment/checklist/
-
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = '^z6!d^nhk@ml=@-g0o!9)0j+#h7q!iuj#r^k90cjr!glvcew3s'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -71,19 +72,6 @@ TEMPLATES = [
 WSGI_APPLICATION = 'boilerplate.wsgi.application'
 
 
-# Database
-# https://docs.djangoproject.com/en/2.0/ref/settings/#databases
-
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'django_boilerplate_db',
-        'USER': 'root',
-        'PASSWORD': 'hegy2CxgD3pyQWJjUjIX',
-        'HOST': '127.0.0.1',
-        'PORT': ''    
-    }
-}
 
 
 # Password validation
@@ -124,11 +112,4 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
-#
-# EMAILS
-#
-EMAIL_HOST = 'smtp.rebella.sk'
-EMAIL_HOST_PASSWORD = 'kMu2T6fg1xx0pihMAXhV'
-EMAIL_HOST_USER = 'adminko'
-EMAIL_PORT = '587'
-EMAIL_USE_TLS = True
+

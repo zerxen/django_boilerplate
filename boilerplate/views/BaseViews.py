@@ -18,6 +18,8 @@ from django import forms
 from boilerplate.models import *
 import boilerplate
 import hashlib
+import datetime
+from django.utils import timezone
 
 
 class BaseView(TemplateView):
@@ -133,34 +135,42 @@ class RegistrationView(BaseView):
                 return self.return_error_and_prefill_form(request, regform, "Password has to contain one letter and one digit or special character!")                                
                 
          
+        ## 
+        ## Check if this user by chance already exists
+        ##
+        if User.objects.filter(username=regform.cleaned_data['email']).first() or User.objects.filter(email=regform.cleaned_data['email']).first():
+            return self.return_error_and_prefill_form(request, regform, "This email is already registered")
+         
         ##
         ## Everything passed, lets create user and send email to the user with activation link
         ##   
         Logger.info("New user wants registration, with " + regform.cleaned_data['email'] + " and email:" + regform.cleaned_data['email'])       
-        
-        # local admin creation
-        if User.objects.filter(username=regform.cleaned_data['email']).first() or User.objects.filter(email=regform.cleaned_data['email']).first():
-            return self.return_error_and_prefill_form(request, regform, "This email is already registered")
-        
-        user=User.objects.create_user(regform.cleaned_data['email'], email=regform.cleaned_data['email'], password=regform.cleaned_data['password1'], is_superuser=False, is_staff=False, is_active = False)
-        hash_object = hashlib.sha512((str(user.date_joined) + user.email).encode())
-        hex_dig = hash_object.hexdigest()
-        Logger.info("activation key: " + hex_dig)
-        user.last_name = hex_dig
-        user.save() 
+         
+        ##
+        ## Try to send activation email, only if this works we actually write to database
+        ##
+        hash_object = hashlib.sha512((str(datetime.date.today().strftime("%B %d, %Y")) + regform.cleaned_data['email']).encode())
+        hex_dig = hash_object.hexdigest()  
+        Logger.info("activation key for new user : " + regform.cleaned_data['email'] + " is " + hex_dig)           
+        try:          
+            send_mail(
+                'activation email',
+                'https://networkgeekstuff.com/?activate='+hex_dig,
+                'activation@networkgeekstuff.com',
+                [regform.cleaned_data['email']],
+                fail_silently=False,
+            )
+        except:
+            Logger.error("Unable to send activation email to " + regform.cleaned_data['email']) 
+            return self.return_error_and_prefill_form(request, regform, "We were unable to send out an activation email for this user, as such this user creation was deleted")
+
         
         ##
-        ## Send activation email
-        ##       
-        import code
-        code.interact(local=locals())        
-        send_mail(
-            'activation email',
-            'https://networkgeekstuff.com/?activate='+user.last_name,
-            'activation@networkgeekstuff.com',
-            [user.email],
-            fail_silently=False,
-        )
+        ## Create user and activation associated entry
+        ##
+        user=User.objects.create_user(regform.cleaned_data['email'], email=regform.cleaned_data['email'], password=regform.cleaned_data['password1'], is_superuser=False, is_staff=False, is_active = False)
+        activation = Activation(activation_string=hex_dig,user=user,activation_requested_at=timezone.now())
+        activation.save()         
         
         ##
         ## Return back to registration view, but with "registration_passed" context
