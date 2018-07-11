@@ -11,6 +11,7 @@
                 <input type="hidden" name="next" value="{{ request.GET.next }}" />
                 <input type="submit" value="Sign in" />
             </form>
+            If you do not have an account, you can [<a style='color: red' href="{% url 'registration' %}">REGISTER</a>]
         {% endif %}
 
 {% endblock %}

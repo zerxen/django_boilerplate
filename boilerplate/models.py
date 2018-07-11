@@ -58,10 +58,10 @@ class Logger(models.Model):
         log.severity = 3
         log.save() 
         print("ERROR["+ str(log.severity) + "]: " + log_text)        
-        
+            
         
 class Activation(models.Model):
-    activation_string = models.CharField(max_lenght=1024)
+    activation_string = models.CharField(max_length=1000,blank=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     # holds django.utils.timezone.now()
     activation_requested_at = models.DateTimeField()

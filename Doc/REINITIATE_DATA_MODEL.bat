@@ -1,5 +1,5 @@
 echo "Deleting ANY old migrations"
-del "..\django_boilerplate\migrations\0*.py" 
+del "..\boilerplate\migrations\0*.py" 
 
 
 echo "Clean/Recreate MySQL database"
@@ -13,4 +13,3 @@ python ..\manage.py makemigrations boilerplate
 python ..\manage.py migrate boilerplate
 python ..\manage.py migrate
 
-pause

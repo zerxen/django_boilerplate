@@ -31,14 +31,5 @@
         -->              
         {% block content %}
         {% endblock %}  
-    
-        <!-- 
-        LOG-OUT AND LOGIN 
-        -->     
-        {% if user.username %}    
-            <strong>Logged in as:  {{ user.username }} [<a style='color: red' href="{% url 'logout' %}">LOG-OUT</a>]</strong>                      
-        {% else %}
-            Not logged-in [<a style='color: red' href="{% url 'login' %}">LOG-IN</a>] or [<a style='color: red' href="{% url 'registration' %}">REGISTER</a>]
-        {% endif %}
     </body>
 </html>

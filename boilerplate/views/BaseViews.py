@@ -20,6 +20,9 @@ import boilerplate
 import hashlib
 import datetime
 from django.utils import timezone
+from django.core.validators import EmailValidator
+import re
+from boilerplate.settings_secret import *
 
 
 class BaseView(TemplateView):
@@ -153,15 +156,18 @@ class RegistrationView(BaseView):
         hex_dig = hash_object.hexdigest()  
         Logger.info("activation key for new user : " + regform.cleaned_data['email'] + " is " + hex_dig)           
         try:          
-            send_mail(
+            sent_correctly_int_bool = send_mail(
                 'activation email',
-                'https://networkgeekstuff.com/?activate='+hex_dig,
-                'activation@networkgeekstuff.com',
+                DOMAIN + 'accounts/activation/?account=' + regform.cleaned_data['email'] + '&key='+hex_dig,
+                EMAIL_SOURCE,
                 [regform.cleaned_data['email']],
                 fail_silently=False,
             )
-        except:
-            Logger.error("Unable to send activation email to " + regform.cleaned_data['email']) 
+            if sent_correctly_int_bool == 0:
+                raise ValueError('send_mail function returned 0, but we needed 1 to know that the activation email went out.')
+            
+        except Exception as error:
+            Logger.error("Unable to send activation email to " + regform.cleaned_data['email'] + " and got exception: " + repr(error)) 
             return self.return_error_and_prefill_form(request, regform, "We were unable to send out an activation email for this user, as such this user creation was deleted")
 
         
@@ -184,19 +190,52 @@ class RegistrationView(BaseView):
 
             
 class ActivationView(TemplateView):
-    template_name = "boilerplate/base_template.html"
+    template_name = "boilerplate/base_extensions/activation.html"
     model = User
     context_object_name = 'user'
     extra_context = {}
     
+    '''
+    Small function to put error message back to the user
+    '''
+    def return_error(self, request, error_text):
+        messages.add_message(request, messages.ERROR, error_text )
+        context = {
+            }                
+        template = loader.get_template(self.template_name)
+        return HttpResponse(template.render(context, request))     
+    
     # 
     def get(self, request, *args, **kwargs): 
         
-        # JSUT IN CASE
-        initialization.initialization()
+        if 'account' not in request.GET or not re.match(r"[^@]+@[^@]+\.[^@]+", request.GET.get('account')):
+            return self.return_error(request, "Invalid data in activation[01]")
+            
         
+        user_obj = User.objects.get(email=request.GET.get('account')) 
+        if user_obj is None:
+            return self.return_error(request, "Invalid data in activation[02]")     
+        
+        if 'key' not in request.GET or not re.match(r"\b[a-f0-9]{128}\b", request.GET.get('key')):
+            return self.return_error(request, "Invalid data in activation[03]")            
+             
+        key = request.GET.get('key')
+        activation_obj = Activation.objects.get(user=user_obj.id)
+            
+        if activation_obj.activation_string != key:
+            return self.return_error(request, "Invalid data in activation[04]")
+        
+        #
+        # If you are down here, all passed and you can activate the user and give him a success message
+        #            
+        
+        #activation 
+        user_obj.is_active = True;
+        user_obj.save()
+        
+        # reply to user
         context = {
-            self.context_object_name: request.user,
+            'result': 'success',
         }         
         context.update(self.extra_context)                
        
