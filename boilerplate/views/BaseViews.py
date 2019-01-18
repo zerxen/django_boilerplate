@@ -65,11 +65,11 @@ class LoginView(BaseView):
                 #return redirect(reverse(next))
                 return redirect(next)
             else:
-                state = "Inactive account"            
+                messages.add_message(request, messages.ERROR, "Authentication Failed" )     
                 HttpResponseForbidden("Invalid account")
         
         # GENERIC RETURN           
-        return redirect(request.path)    
+        return redirect('index')    
     
 class LogoutView(BaseView):
     def get(self, request, *args, **kwargs): 
@@ -150,33 +150,37 @@ class RegistrationView(BaseView):
         Logger.info("New user wants registration, with " + regform.cleaned_data['email'] + " and email:" + regform.cleaned_data['email'])       
          
         ##
-        ## Try to send activation email, only if this works we actually write to database
+        ## Create user and activation associated entry
         ##
         hash_object = hashlib.sha512((str(datetime.date.today().strftime("%B %d, %Y")) + regform.cleaned_data['email']).encode())
-        hex_dig = hash_object.hexdigest()  
+        hex_dig = hash_object.hexdigest()          
+        user=User.objects.create_user(regform.cleaned_data['email'], email=regform.cleaned_data['email'], password=regform.cleaned_data['password1'], is_superuser=False, is_staff=False, is_active = False)
+        activation = Activation(activation_string=hex_dig,user=user,activation_requested_at=timezone.now())
+        activation.save()          
+         
+        ##
+        ## Try to send activation email, only if this works we actually write to database
+        ##
+
         Logger.info("activation key for new user : " + regform.cleaned_data['email'] + " is " + hex_dig)           
         try:          
             sent_correctly_int_bool = send_mail(
                 'activation email',
-                DOMAIN + 'accounts/activation/?account=' + regform.cleaned_data['email'] + '&key='+hex_dig,
+                DOMAIN + 'accounts/'+ str(user.id) +'/activation/?key='+hex_dig,
                 EMAIL_SOURCE,
                 [regform.cleaned_data['email']],
                 fail_silently=False,
             )
             if sent_correctly_int_bool == 0:
                 raise ValueError('send_mail function returned 0, but we needed 1 to know that the activation email went out.')
+            else:
+                activation.email_sent = True;
+                activation.save()
             
         except Exception as error:
             Logger.error("Unable to send activation email to " + regform.cleaned_data['email'] + " and got exception: " + repr(error)) 
             return self.return_error_and_prefill_form(request, regform, "We were unable to send out an activation email for this user, as such this user creation was deleted")
 
-        
-        ##
-        ## Create user and activation associated entry
-        ##
-        user=User.objects.create_user(regform.cleaned_data['email'], email=regform.cleaned_data['email'], password=regform.cleaned_data['password1'], is_superuser=False, is_staff=False, is_active = False)
-        activation = Activation(activation_string=hex_dig,user=user,activation_requested_at=timezone.now())
-        activation.save()         
         
         ##
         ## Return back to registration view, but with "registration_passed" context
@@ -208,11 +212,15 @@ class ActivationView(TemplateView):
     # 
     def get(self, request, *args, **kwargs): 
         
-        if 'account' not in request.GET or not re.match(r"[^@]+@[^@]+\.[^@]+", request.GET.get('account')):
+        if 'pk' not in kwargs:
             return self.return_error(request, "Invalid data in activation[01]")
             
         
-        user_obj = User.objects.get(email=request.GET.get('account')) 
+        if kwargs.get('pk') == None:
+            return self.return_error(request, "Invalid data in activation[01b]")
+            
+        
+        user_obj = User.objects.get(pk=kwargs.get('pk'))     
         if user_obj is None:
             return self.return_error(request, "Invalid data in activation[02]")     
         

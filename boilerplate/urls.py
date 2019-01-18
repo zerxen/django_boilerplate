@@ -28,7 +28,7 @@ urlpatterns = [
     
     ## REGISTRATION
     re_path(r'^accounts/registration/$', RegistrationView.as_view(), name='registration'),
-    re_path(r'^accounts/activation/$', ActivationView.as_view(), name='activation'),
+    re_path(r'^accounts/(?P<pk>[0-9]+)/activation/$', ActivationView.as_view(), name='activation'),
     
     ## ADMIN AREA
     path('admin/', admin.site.urls),

@@ -5,6 +5,7 @@ Created on Jul 9, 2018
 '''
 from boilerplate.models import Logger
 from django.contrib.auth.models import Group, User
+from boilerplate.settings_secret import *
 
 def initialization():
     

@@ -12,6 +12,7 @@ import re
 
 from django.db import models
 from django.utils import timezone;
+from boilerplate.settings import *
 
 from django.contrib.auth.models import Group, User
 from django.contrib.auth.models import AbstractUser
@@ -65,4 +66,18 @@ class Activation(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     # holds django.utils.timezone.now()
     activation_requested_at = models.DateTimeField()
+    email_sent = models.BooleanField(default=False)
+    
+    def is_valid(self, key):
+        
+        if (timezone.now() - self.activation_requested_at).total_seconds() > REGISTRATION_ACTIVATION_TIMEOUT :
+            return False;
+        
+        if key != self.activation_string:
+            return False;
+        
+        return True
+        
+         
+        
       

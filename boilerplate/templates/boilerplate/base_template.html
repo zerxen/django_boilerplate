@@ -4,9 +4,6 @@
         <title>Boilerplate</title>
     </head>
     <body>
-        <h1>Base template:</h1>
-        
-        
         <!-- 
         ERROR DISPLAY BETWEEN HEADER AND MENU 
         -->
@@ -30,6 +27,9 @@
         CONTENT 
         -->              
         {% block content %}
-        {% endblock %}  
+        {% endblock %}
+        {% if user.username %}
+        logged in as {{ user.username }}, [<a href="{% url 'logout' %}">LOG-OUT</a>]
+        {% endif %}  
     </body>
 </html>
