@@ -2,16 +2,22 @@
 
 {% block content %}
 
-        {% if user.username %} 
-            Logged in as: {{user.username}} <br>
-        {% else %}
-             <form action="{% url 'login' %}" method="post"> {% csrf_token %}
-                Username: <input type="text" name="username" value="{{ username }}" />
-                Password: <input type="password" name="password" value="" />
-                <input type="hidden" name="next" value="{{ request.GET.next }}" />
-                <input type="submit" value="Sign in" />
-            </form>
-            If you do not have an account, you can [<a style='color: red' href="{% url 'registration' %}">REGISTER</a>]
-        {% endif %}
+    {% if user.username %}
+        Logged in as: {{user.username}} <br>
+    {% else %}
+        <h3>Please enter your credentials</h3>
+        <form action="{% url 'login' %}" method="post"> {% csrf_token %}
+            <div class="col-sm-6 r-align-large"><label>Username[email]:</label></div><div class="col-sm-6"> <input type="text" name="username" value="{{ username }}" /></div>
+            <div class="col-sm-6 r-align-large"><label>Password:</label></div><div class="col-sm-6"> <input type="password" name="password" value="" /></div>
+            <div class="col-sm-6 r-align-large"></div><div class="col-sm-6"> <input type="submit" value="Sign in" /></div>
+            <input type="hidden" name="next" value="{{ request.GET.next }}" />
+        </form>
+        <div class="col-sm-6 r-align-large"></div><div class="col-sm-6">
+            <br>If you do not have an account, you can <br>[<a style='color: red' href="{% url 'registration' %}">REGISTER</a>]
+        </div>
+        <div class="col-sm-6 r-align-large"></div><div class="col-sm-6">
+            <br>If you do remember your password, you can <br> [<a style='color: red' href="{% url 'password_reset_request' %}">RESET PASSWORD</a>]
+        </div>
+    {% endif %}
 
 {% endblock %}

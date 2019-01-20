@@ -77,6 +77,36 @@ class Activation(models.Model):
             return False;
         
         return True
+
+class PasswordResetRequest(models.Model):
+    activation_string = models.CharField(max_length=1000, blank=True)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    # holds django.utils.timezone.now()
+    activation_requested_at = models.DateTimeField()
+    email_sent = models.BooleanField(default=False)
+    already_used = models.BooleanField(default=False)
+
+    def is_not_old(self):
+        if self.already_used:
+            return False;
+
+        if (timezone.now() - self.activation_requested_at).total_seconds() > PASSWORD_RESET_REQUEST_ACTIVE_TIMEOUT:
+            return False;
+        else:
+            return True;
+
+    def is_valid(self, key):
+
+        if (timezone.now() - self.activation_requested_at).total_seconds() > PASSWORD_RESET_REQUEST_ACTIVE_TIMEOUT:
+            return False;
+
+        if key != self.activation_string:
+            return False;
+
+        if self.already_used:
+            return False;
+
+        return True
         
          
         

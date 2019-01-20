@@ -27,6 +27,12 @@ def initialization():
     user.save()
     user.groups.add(ga)
     user.save()
+
+
+    # local test user creation
+    user=User.objects.create_user('zerxen@networkgeekstuff.com', password='Kreten123!')
+    user.is_active = True
+    user.save()
     
     
     '''

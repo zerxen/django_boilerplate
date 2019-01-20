@@ -16,7 +16,8 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, re_path
 from django.contrib.auth.decorators import login_required
-from boilerplate.views.BaseViews import BaseView,LoginView,LogoutView,RegistrationView,ActivationView
+from boilerplate.views.BaseViews import BaseView,LoginView,LogoutView,\
+    RegistrationView,ActivationView,PasswordResetRequestView,PasswordResetView
 
 
 urlpatterns = [
@@ -29,7 +30,11 @@ urlpatterns = [
     ## REGISTRATION
     re_path(r'^accounts/registration/$', RegistrationView.as_view(), name='registration'),
     re_path(r'^accounts/(?P<pk>[0-9]+)/activation/$', ActivationView.as_view(), name='activation'),
-    
+
+    ## PASSWORD RESET
+    re_path(r'^accounts/password_reset_request/$', PasswordResetRequestView.as_view(), name='password_reset_request'),
+    re_path(r'^accounts/password_reset/$', PasswordResetView.as_view(), name='password_reset'),
+
     ## ADMIN AREA
     path('admin/', admin.site.urls),
     
